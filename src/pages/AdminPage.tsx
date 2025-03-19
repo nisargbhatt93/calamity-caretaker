@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { Layout } from "@/components/Layout";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,7 +63,12 @@ const AdminPage = () => {
     setTimeout(() => {
       const newDisaster = {
         id: (disasters.length + 1).toString(),
-        ...data,
+        type: data.type,
+        title: data.title,
+        location: data.location,
+        date: data.date,
+        severity: data.severity,
+        description: data.description,
       };
       
       // In a real app, this would be an API call
