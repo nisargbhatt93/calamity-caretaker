@@ -10,6 +10,7 @@ import DisasterDetailPage from "./pages/DisasterDetailPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import EmergencyPage from "./pages/EmergencyPage";
 import AboutPage from "./pages/AboutPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/emergency" element={<EmergencyPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
