@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, AlertTriangle } from 'lucide-react';
+import { Menu, X, AlertTriangle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AdminDropdown } from '@/components/AdminDropdown';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,6 +37,7 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <nav className="hidden md:flex gap-8 items-center">
           <NavLinks />
+          <AdminDropdown />
           <Link to="/emergency">
             <Button variant="destructive" className="shadow-md hover:shadow-lg transition-all">
               Emergency
@@ -61,6 +63,9 @@ const Navbar = () => {
       )}>
         <div className="container mx-auto px-4 flex flex-col gap-4">
           <MobileNavLinks toggleMenu={toggleMenu} />
+          <div className="py-2">
+            <AdminDropdown isMobile={true} toggleMenu={toggleMenu} />
+          </div>
           <Link to="/emergency" onClick={toggleMenu}>
             <Button variant="destructive" className="w-full shadow-md">
               Emergency
