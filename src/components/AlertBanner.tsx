@@ -29,7 +29,7 @@ const AlertBanner = ({
 
   const levelStyles = {
     info: 'bg-blue-50 border-blue-200 text-blue-800',
-    warning: 'bg-warning/10 border-warning/20 text-warning-foreground',
+    warning: 'bg-warning/10 border-warning/20 text-black',
     critical: 'bg-danger/10 border-danger/20 text-danger-foreground',
   };
 

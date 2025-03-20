@@ -43,6 +43,9 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
       title: "Logged in successfully",
       description: "Welcome back, admin!",
     });
+    
+    // Redirect to admin page after login
+    navigate('/admin');
   };
 
   const handleSignup = (e: React.FormEvent) => {
@@ -55,6 +58,9 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
       title: "Account created successfully",
       description: "You're now logged in as an admin.",
     });
+    
+    // Redirect to admin page after signup
+    navigate('/admin');
   };
 
   const handleGoogleAuth = () => {
@@ -67,6 +73,9 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
       title: "Google authentication successful",
       description: "You're now logged in as an admin.",
     });
+    
+    // Redirect to admin page after Google auth
+    navigate('/admin');
   };
 
   const handleLogout = () => {
