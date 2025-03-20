@@ -45,7 +45,7 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
     });
     
     // Redirect to admin page after login
-    navigate('/admin');
+    setTimeout(() => navigate('/admin'), 100);
   };
 
   const handleSignup = (e: React.FormEvent) => {
@@ -60,7 +60,7 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
     });
     
     // Redirect to admin page after signup
-    navigate('/admin');
+    setTimeout(() => navigate('/admin'), 100);
   };
 
   const handleGoogleAuth = () => {
@@ -75,7 +75,7 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
     });
     
     // Redirect to admin page after Google auth
-    navigate('/admin');
+    setTimeout(() => navigate('/admin'), 100);
   };
 
   const handleLogout = () => {

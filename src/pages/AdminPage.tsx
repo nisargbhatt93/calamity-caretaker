@@ -63,7 +63,7 @@ const AdminPage = () => {
     setTimeout(() => {
       const newDisaster = {
         id: (disasters.length + 1).toString(),
-        type: data.type,
+        type: data.type as DisasterType,
         title: data.title,
         location: data.location,
         date: data.date,
