@@ -26,7 +26,7 @@ export class ObjectId {
 
 // In-memory database for browser development
 class InMemoryDatabase {
-  private collections: {
+  private static collections: {
     [name: string]: any[];
   } = {
     disasters: [],
@@ -35,8 +35,8 @@ class InMemoryDatabase {
 
   // Get a collection by name
   collection(name: string) {
-    if (!this.collections[name]) {
-      this.collections[name] = [];
+    if (!InMemoryDatabase.collections[name]) {
+      InMemoryDatabase.collections[name] = [];
     }
 
     return {
@@ -44,14 +44,14 @@ class InMemoryDatabase {
       find: (query = {}) => {
         return {
           toArray: () => {
-            return Promise.resolve(this.filterDocuments(this.collections[name], query));
+            return Promise.resolve(this.filterDocuments(InMemoryDatabase.collections[name], query));
           }
         };
       },
       
       // Find a single document
       findOne: (query = {}) => {
-        const results = this.filterDocuments(this.collections[name], query);
+        const results = this.filterDocuments(InMemoryDatabase.collections[name], query);
         return Promise.resolve(results.length > 0 ? results[0] : null);
       },
       
@@ -61,24 +61,24 @@ class InMemoryDatabase {
           doc._id = new ObjectId();
         }
         doc.createdAt = doc.createdAt || new Date();
-        this.collections[name].push(doc);
+        InMemoryDatabase.collections[name].push(doc);
         return Promise.resolve({ insertedId: doc._id });
       },
       
       // Update a document
       updateOne: (query: any, update: any) => {
-        const results = this.filterDocuments(this.collections[name], query);
+        const results = this.filterDocuments(InMemoryDatabase.collections[name], query);
         if (results.length > 0) {
-          const index = this.collections[name].indexOf(results[0]);
+          const index = InMemoryDatabase.collections[name].indexOf(results[0]);
           if (update.$set) {
-            this.collections[name][index] = { 
-              ...this.collections[name][index], 
+            InMemoryDatabase.collections[name][index] = { 
+              ...InMemoryDatabase.collections[name][index], 
               ...update.$set 
             };
           }
           if (update.$unset) {
             Object.keys(update.$unset).forEach(key => {
-              delete this.collections[name][index][key];
+              delete InMemoryDatabase.collections[name][index][key];
             });
           }
           return Promise.resolve({ modifiedCount: 1 });
