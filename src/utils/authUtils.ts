@@ -37,9 +37,40 @@ export const initGoogleAuth = (): Promise<google.accounts.id.IdConfiguration> =>
 };
 
 // Function to handle Google response
-export const handleGoogleResponse = (response: google.accounts.id.CredentialResponse) => {
+export const handleGoogleResponse = async (response: google.accounts.id.CredentialResponse) => {
   // Decode the JWT token
   const payload = decodeJwtResponse(response.credential);
+  
+  try {
+    // Check if user exists in database
+    const { getUserByEmail, addUser } = await import('./mongoDb');
+    
+    const user = await getUserByEmail(payload.email);
+    
+    if (!user) {
+      // Create user if not exists
+      await addUser({
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture,
+        googleId: payload.sub,
+        verified: true, // Google accounts are pre-verified
+        createdAt: new Date(),
+      });
+    }
+    
+    // In a real application, you would set up an authentication session here
+    const { toast } = await import('@/components/ui/use-toast');
+    toast({
+      title: "Google Sign-In Successful",
+      description: `Welcome, ${payload.name}!`,
+    });
+    
+    // Redirect to the admin page
+    window.location.href = '/admin';
+  } catch (error) {
+    console.error("Error handling Google sign-in:", error);
+  }
   
   // Return user data from token
   return {

@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { DisasterType } from "@/components/DisasterCard";
-import { disasters } from "@/data/disasters";
+import { addDisaster } from "@/utils/mongoDb";
 
 const formSchema = z.object({
   type: z.enum(["earthquake", "flood", "wildfire", "hurricane", "tornado", "other"] as const),
@@ -56,35 +56,41 @@ const AdminPage = () => {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     
-    // Simulate adding to database
-    setTimeout(() => {
+    try {
       const newDisaster = {
-        id: (disasters.length + 1).toString(),
         type: data.type as DisasterType,
         title: data.title,
         location: data.location,
         date: data.date,
         severity: data.severity,
         description: data.description,
+        createdAt: new Date(),
       };
       
-      // In a real app, this would be an API call
-      disasters.push(newDisaster);
+      // Save to MongoDB
+      await addDisaster(newDisaster);
       
       toast({
         title: "Success!",
-        description: "New disaster information has been added.",
+        description: "New disaster information has been added to the database.",
       });
       
       form.reset();
-      setIsSubmitting(false);
-      
       // Navigate to the disasters page
       navigate("/disasters");
-    }, 1000);
+    } catch (error) {
+      console.error("Error adding disaster:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add disaster information. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
