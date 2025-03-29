@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, LogIn, LogOut, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,11 +15,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { initGoogleAuth, renderGoogleButton } from '@/utils/authUtils';
 
 type AdminDropdownProps = {
   isMobile?: boolean;
@@ -30,8 +30,63 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
   const [isSignupDialogOpen, setIsSignupDialogOpen] = useState(false);
+  const [googleInitialized, setGoogleInitialized] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const loginGoogleButtonRef = useRef<HTMLDivElement>(null);
+  const signupGoogleButtonRef = useRef<HTMLDivElement>(null);
+
+  // Initialize Google Auth
+  useEffect(() => {
+    const loadGoogleAuth = async () => {
+      try {
+        await initGoogleAuth();
+        setGoogleInitialized(true);
+      } catch (error) {
+        console.error('Error initializing Google Auth:', error);
+      }
+    };
+
+    loadGoogleAuth();
+  }, []);
+
+  // Render Google buttons when dialog opens
+  useEffect(() => {
+    if (googleInitialized && isLoginDialogOpen && loginGoogleButtonRef.current) {
+      renderGoogleButton('login-google-button');
+    }
+  }, [googleInitialized, isLoginDialogOpen]);
+
+  useEffect(() => {
+    if (googleInitialized && isSignupDialogOpen && signupGoogleButtonRef.current) {
+      renderGoogleButton('signup-google-button');
+    }
+  }, [googleInitialized, isSignupDialogOpen]);
+
+  // Set up Google callback
+  useEffect(() => {
+    // This adds the callback to window to make it accessible from the Google Auth response
+    window.handleGoogleSignIn = (response: any) => {
+      const tokenPayload = JSON.parse(atob(response.credential.split('.')[1]));
+      
+      // Log the user in
+      setIsLoggedIn(true);
+      setIsLoginDialogOpen(false);
+      setIsSignupDialogOpen(false);
+      
+      toast({
+        title: "Google authentication successful",
+        description: `Logged in as ${tokenPayload.email}`,
+      });
+      
+      // Redirect to admin page after Google auth
+      setTimeout(() => navigate('/admin'), 100);
+    };
+
+    return () => {
+      delete window.handleGoogleSignIn;
+    };
+  }, [toast, navigate]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,6 +239,7 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
                   <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
                 </div>
               </div>
+              <div id="login-google-button" ref={loginGoogleButtonRef} className="flex justify-center"></div>
               <Button 
                 type="button" 
                 variant="outline" 
@@ -234,6 +290,7 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
                   <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
                 </div>
               </div>
+              <div id="signup-google-button" ref={signupGoogleButtonRef} className="flex justify-center"></div>
               <Button 
                 type="button" 
                 variant="outline" 
@@ -252,3 +309,10 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
     </>
   );
 };
+
+// Add this for TypeScript to recognize the global function
+declare global {
+  interface Window {
+    handleGoogleSignIn: (response: any) => void;
+  }
+}
