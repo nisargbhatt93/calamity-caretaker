@@ -95,6 +95,11 @@ const SignupForm = ({ onSignup, onSwitchToLogin }: SignupFormProps) => {
       // Send OTP email
       await sendOtpEmail(email, otp);
       
+      toast({
+        title: "Verification Required",
+        description: `We've sent a verification code to ${email}. Please check your inbox.`,
+      });
+      
       // Show OTP verification screen
       setShowOtpVerification(true);
     } catch (error) {
