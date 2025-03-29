@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, LogIn, LogOut, UserPlus } from 'lucide-react';
+import { Shield, LogIn, LogOut, UserPlus, Google } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -188,8 +188,9 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
                 type="button" 
                 variant="outline" 
                 onClick={handleGoogleAuth}
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2"
               >
+                <Google className="h-4 w-4" />
                 Google
               </Button>
             </div>
@@ -235,8 +236,9 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
                 type="button" 
                 variant="outline" 
                 onClick={handleGoogleAuth}
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2"
               >
+                <Google className="h-4 w-4" />
                 Google
               </Button>
             </div>
@@ -246,3 +248,4 @@ export const AdminDropdown = ({ isMobile, toggleMenu }: AdminDropdownProps = {})
     </>
   );
 };
+
