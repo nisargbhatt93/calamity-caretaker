@@ -4,11 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { addUser, getUserByEmail, updateUserOtp } from "@/utils/mongoDb";
-import { generateOtp, sendOtpEmail } from "@/utils/emailUtils";
-import OtpVerification from "./OtpVerification";
-import { initGoogleAuth, renderGoogleButton } from "@/utils/authUtils";
-import { useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SignupFormProps {
   onSignup: () => void;
@@ -17,29 +13,12 @@ interface SignupFormProps {
 
 const SignupForm = ({ onSignup, onSwitchToLogin }: SignupFormProps) => {
   const { toast } = useToast();
+  const { signUp, googleSignIn } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showOtpVerification, setShowOtpVerification] = useState(false);
-  const googleSignInButtonRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Initialize Google Auth
-    const loadGoogleAuth = async () => {
-      try {
-        await initGoogleAuth();
-        if (googleSignInButtonRef.current) {
-          renderGoogleButton("google-signin-button-signup");
-        }
-      } catch (error) {
-        console.error("Error initializing Google Auth:", error);
-      }
-    };
-
-    loadGoogleAuth();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,72 +44,25 @@ const SignupForm = ({ onSignup, onSwitchToLogin }: SignupFormProps) => {
     setIsSubmitting(true);
     
     try {
-      // Check if user already exists
-      const existingUser = await getUserByEmail(email);
+      const { error } = await signUp(email, password, name);
       
-      if (existingUser) {
+      if (!error) {
+        // In Supabase, verification is often required before actual login
         toast({
-          title: "User Exists",
-          description: "An account with this email already exists",
-          variant: "destructive",
+          title: "Signup Successful",
+          description: "Please check your email for verification instructions.",
         });
-        setIsSubmitting(false);
-        return;
+        // We still call onSignup so the UI updates appropriately
+        onSignup();
       }
-      
-      // Generate OTP
-      const otp = generateOtp();
-      
-      // Create user with unverified status
-      await addUser({
-        name,
-        email,
-        password, // In a real application, you would hash this password
-        otp,
-        otpCreatedAt: new Date(),
-        verified: false,
-        createdAt: new Date(),
-      });
-      
-      // Send OTP email
-      await sendOtpEmail(email, otp);
-      
-      toast({
-        title: "Verification Required",
-        description: `We've sent a verification code to ${email}. Please check your inbox.`,
-      });
-      
-      // Show OTP verification screen
-      setShowOtpVerification(true);
-    } catch (error) {
-      console.error("Signup error:", error);
-      toast({
-        title: "Signup Failed",
-        description: "An error occurred during signup. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleOtpSuccess = () => {
-    toast({
-      title: "Signup Successful",
-      description: "Your account has been created and verified successfully.",
-    });
-    onSignup();
+  const handleGoogleSignIn = async () => {
+    await googleSignIn();
   };
-
-  if (showOtpVerification) {
-    return (
-      <OtpVerification
-        email={email}
-        onSuccess={handleOtpSuccess}
-        onCancel={() => setShowOtpVerification(false)}
-      />
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -202,7 +134,17 @@ const SignupForm = ({ onSignup, onSwitchToLogin }: SignupFormProps) => {
       </div>
       
       <div className="grid gap-2">
-        <div id="google-signin-button-signup" ref={googleSignInButtonRef} className="flex justify-center"></div>
+        <Button 
+          variant="outline" 
+          type="button" 
+          onClick={handleGoogleSignIn} 
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z" fill="#4285F4"/>
+          </svg>
+          Sign up with Google
+        </Button>
       </div>
       
       <div className="text-center text-sm">

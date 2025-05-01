@@ -26,7 +26,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { DisasterType } from "@/components/DisasterCard";
-import { addDisaster } from "@/utils/mongoDb";
+import { addDisaster } from "@/services/disasterService";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const formSchema = z.object({
   type: z.enum(["earthquake", "flood", "wildfire", "hurricane", "tornado", "other"] as const),
@@ -42,6 +44,7 @@ type FormValues = z.infer<typeof formSchema>;
 const AdminPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
@@ -56,6 +59,11 @@ const AdminPage = () => {
     },
   });
 
+  // Redirect to login if not authenticated
+  if (!loading && !user) {
+    return <Navigate to="/" />;
+  }
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     
@@ -67,31 +75,31 @@ const AdminPage = () => {
         date: data.date,
         severity: data.severity,
         description: data.description,
-        createdAt: new Date(),
       };
       
-      // Save to MongoDB
+      // Save to Supabase
       await addDisaster(newDisaster);
-      
-      toast({
-        title: "Success!",
-        description: "New disaster information has been added to the database.",
-      });
       
       form.reset();
       // Navigate to the disasters page
       navigate("/disasters");
     } catch (error) {
       console.error("Error adding disaster:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add disaster information. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container max-w-4xl py-10 flex items-center justify-center">
+          <p>Loading...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

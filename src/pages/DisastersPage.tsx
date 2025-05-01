@@ -1,4 +1,6 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import DisasterCard, { DisasterType } from '@/components/DisasterCard';
 import { AlertTriangle, AlertCircle, Filter } from 'lucide-react';
@@ -22,13 +24,18 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import AlertBanner from '@/components/AlertBanner';
-import { disasters } from '@/data/disasters';
+import { getAllDisasters } from '@/services/disasterService';
 
 const DisastersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<DisasterType | 'all'>('all');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+
+  const { data: disasters = [], isLoading, error } = useQuery({
+    queryKey: ['disasters'], 
+    queryFn: getAllDisasters
+  });
 
   const filteredDisasters = disasters.filter((disaster) => {
     const matchesSearch = 
@@ -42,13 +49,38 @@ const DisastersPage = () => {
     return matchesSearch && matchesType && matchesSeverity;
   });
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12 flex items-center justify-center">
+          <p>Loading disasters...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12">
+          <div className="bg-destructive/10 p-4 rounded-md text-destructive border border-destructive/20">
+            <h2 className="font-semibold mb-2">Error Loading Disasters</h2>
+            <p>There was a problem loading the disaster information. Please try again later.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <AlertBanner 
-        level="warning" 
-        message="Hurricane warning in effect for the Gulf Coast. Stay informed and prepared." 
-        detailsLink="/disasters/4" 
-      />
+      {disasters.find(d => d.severity === 'critical' && d.type === 'hurricane') && (
+        <AlertBanner 
+          level="warning" 
+          message="Hurricane warning in effect for the Gulf Coast. Stay informed and prepared." 
+          detailsLink={`/disasters/${disasters.find(d => d.type === 'hurricane')?.id}`} 
+        />
+      )}
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col">

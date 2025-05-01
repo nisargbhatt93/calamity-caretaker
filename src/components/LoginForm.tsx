@@ -1,11 +1,10 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { getUserByEmail } from "@/utils/mongoDb";
-import { initGoogleAuth, renderGoogleButton } from "@/utils/authUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -14,26 +13,10 @@ interface LoginFormProps {
 
 const LoginForm = ({ onLogin, onSwitchToSignup }: LoginFormProps) => {
   const { toast } = useToast();
+  const { signIn, googleSignIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const googleSignInButtonRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Initialize Google Auth
-    const loadGoogleAuth = async () => {
-      try {
-        await initGoogleAuth();
-        if (googleSignInButtonRef.current) {
-          renderGoogleButton("google-signin-button-login");
-        }
-      } catch (error) {
-        console.error("Error initializing Google Auth:", error);
-      }
-    };
-
-    loadGoogleAuth();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,57 +33,18 @@ const LoginForm = ({ onLogin, onSwitchToSignup }: LoginFormProps) => {
     setIsSubmitting(true);
     
     try {
-      // Check if user exists
-      const user = await getUserByEmail(email);
+      const { error } = await signIn(email, password);
       
-      if (!user) {
-        toast({
-          title: "Login Failed",
-          description: "User does not exist",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
+      if (!error) {
+        onLogin();
       }
-      
-      // In a real app, you would compare hashed passwords
-      if (user.password !== password) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid credentials",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Check if user is verified
-      if (!user.verified) {
-        toast({
-          title: "Account Not Verified",
-          description: "Please verify your email before logging in",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
-      });
-      
-      onLogin();
-    } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Login Failed",
-        description: "An error occurred during login. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    await googleSignIn();
   };
 
   return (
@@ -151,7 +95,17 @@ const LoginForm = ({ onLogin, onSwitchToSignup }: LoginFormProps) => {
       </div>
       
       <div className="grid gap-2">
-        <div id="google-signin-button-login" ref={googleSignInButtonRef} className="flex justify-center"></div>
+        <Button 
+          variant="outline" 
+          type="button" 
+          onClick={handleGoogleSignIn} 
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z" fill="#4285F4"/>
+          </svg>
+          Sign in with Google
+        </Button>
       </div>
       
       <div className="text-center text-sm">

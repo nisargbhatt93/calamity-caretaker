@@ -1,19 +1,34 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, MapPin, Clock, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getDisasterById } from '@/services/disasterService';
 import { DisasterInfo } from '@/components/DisasterCard';
-import { disasters } from '@/data/disasters';
 
 const DisasterDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const disaster = disasters.find(d => d.id === id);
+  const { data: disaster, isLoading, error } = useQuery({
+    queryKey: ['disaster', id],
+    queryFn: () => getDisasterById(id || ''),
+    enabled: !!id
+  });
   
-  if (!disaster) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <p>Loading disaster information...</p>
+        </div>
+      </Layout>
+    );
+  }
+  
+  if (error || !disaster) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-12 text-center">
