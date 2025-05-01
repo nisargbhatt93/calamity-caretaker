@@ -1,3 +1,4 @@
+
 import Layout from '@/components/Layout';
 import DisasterList from '@/components/DisasterList';
 import AlertBanner from '@/components/AlertBanner';

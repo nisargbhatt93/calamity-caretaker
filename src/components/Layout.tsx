@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Navbar from './Navbar';
+import { Navbar } from './Navbar';
 import Footer from './Footer';
 
 interface LayoutProps {
@@ -19,7 +19,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow pt-16">
+      <main className="flex-grow container mx-auto px-4 py-8">
         {children}
       </main>
       <Footer />

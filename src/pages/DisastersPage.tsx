@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import DisasterCard, { DisasterType } from '@/components/DisasterCard';
@@ -48,6 +48,12 @@ const DisastersPage = () => {
     
     return matchesSearch && matchesType && matchesSeverity;
   });
+
+  // Type assertion to fix the type error
+  const processedDisasters = filteredDisasters.map(disaster => ({
+    ...disaster,
+    type: disaster.type as DisasterType
+  }));
 
   if (isLoading) {
     return (
@@ -184,11 +190,11 @@ const DisastersPage = () => {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDisasters.length > 0 ? (
-              filteredDisasters.map((disaster, index) => (
+            {processedDisasters.length > 0 ? (
+              processedDisasters.map((disaster, index) => (
                 <DisasterCard 
                   key={disaster.id} 
-                  disaster={disaster} 
+                  disaster={disaster}
                   className={`animate-fade-up animate-delay-${index % 3 * 100}`}
                 />
               ))
